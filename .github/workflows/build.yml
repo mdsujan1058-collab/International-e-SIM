@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
       - name: Prepare Web Files
         run: |
           mkdir -p www
@@ -20,14 +20,14 @@ jobs:
       - name: Initialize Capacitor & Build Signed APK
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
           npx cap init "International eSIM" "com.international.esim" --web-dir=www
           npx cap add android
           npx cap sync
-          keytool -genkey -v -keystore android/release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias esimkey -storepass 123456 -keypass 123456 -dname "CN=International eSIM, OU=App, O=eSIM, L=Dhaka, S=Dhaka, C=BD"
+          keytool -genkey -v -keystore "$GITHUB_WORKSPACE/release-key.jks" -keyalg RSA -keysize 2048 -validity 10000 -alias esimkey -storepass 123456 -keypass 123456 -dname "CN=International eSIM, OU=App, O=eSIM, L=Dhaka, S=Dhaka, C=BD"
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease -Pandroid.injected.signing.store.file=release-key.jks -Pandroid.injected.signing.store.password=123456 -Pandroid.injected.signing.key.alias=esimkey -Pandroid.injected.signing.key.password=123456
+          ./gradlew assembleRelease -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/release-key.jks" -Pandroid.injected.signing.store.password=123456 -Pandroid.injected.signing.key.alias=esimkey -Pandroid.injected.signing.key.password=123456
       - name: Upload Signed APK
         uses: actions/upload-artifact@v4
         with:
